@@ -16,7 +16,11 @@ class LineByLine(InterpolatingOpacity):
         from taurex.cache import GlobalCache
         from taurex.util.util import sanitize_molecule_string
 
-        input_path = GlobalCache()['xsec_path']
+        input_path = None
+        if GlobalCache()['petitrad_path'] is not None:
+            input_path = os.path.join(GlobalCache()['petitrad_path'],'petitRADTRANS','input_data')
+
+        input_path = input_path or GlobalCache()['xsec_path']
         if input_path is None:
             return []
         opacities_path = os.path.join(input_path,'opacities','lines','line_by_line')
