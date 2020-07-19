@@ -2,7 +2,7 @@ from taurex.opacity.ktables import KTable
 from taurex.opacity import InterpolatingOpacity
 import pathlib
 import numpy as np
-
+from taurex.util.util import calculate_weight
 
 class CKTable(KTable, InterpolatingOpacity):
 
@@ -90,8 +90,11 @@ class CKTable(KTable, InterpolatingOpacity):
             xsec = combined.view(np.float64).reshape(-1,16)
             self._xsec_grid[pindex,tindex,:,:] = xsec[:,:]
 
-        self._xsec_grid = self._xsec_grid[:, :, ::-1,:]*10/6.0221409e23
+        num_moles = 1/calculate_weight(self.moleculeName)
 
+        num_molecules = num_moles*6.0221409e23
+
+        self._xsec_grid = self._xsec_grid[:, :, ::-1,:]/num_molecules
 
     def _determine_grids(self):
         import os

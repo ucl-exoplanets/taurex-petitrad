@@ -3,7 +3,7 @@ import pathlib
 import numpy as np
 import os
 import pathlib
-
+from taurex.util.util import calculate_weight
 
 class LineByLine(InterpolatingOpacity):
 
@@ -64,11 +64,18 @@ class LineByLine(InterpolatingOpacity):
         self._xsec_grid = np.empty(shape=(self._pressure_grid.shape[0], 
                                           self._temperature_grid.shape[0],
                                           self._wavenumber_grid.shape[0]))
+
+        num_moles = 1/calculate_weight(self.moleculeName)
+
+        num_molecules = num_moles*6.0221409e23
+
         for p, t, sigma in self._sigma_files:
             pindex = np.where(self._pressure_grid==p)[0]
             tindex = np.where(self._temperature_grid==t)[0]
 
-            self._xsec_grid[pindex, tindex,:] = np.fromfile(sigma)[::-1]
+
+
+            self._xsec_grid[pindex, tindex,:] = np.fromfile(sigma)[::-1]/num_molecules
     
     def _determine_grids(self):
         import os
