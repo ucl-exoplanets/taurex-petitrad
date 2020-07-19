@@ -5,7 +5,8 @@ import sys, os
 from taurex.cache import GlobalCache
 from ..opacities.linebyline import LineByLine
 from ..opacities.ck import CKTable
-
+from taurex.core import fitparam
+from ..util import to_mass_frac
 class petitRADTRANSModel(SimpleForwardModel):
 
     imported = False
@@ -23,7 +24,8 @@ class petitRADTRANSModel(SimpleForwardModel):
                  atm_max_pressure=1e6,
                  rayleigh_species = [],
                  continuum_species = [],
-                 wlen_bords_micron=[0.3,15]
+                 wlen_bords_micron=[0.3,15],
+                 P0=-1,
                  ):
         super().__init__(self.__class__.__name__,
                          planet,
@@ -75,6 +77,7 @@ class petitRADTRANSModel(SimpleForwardModel):
         self.linespecies = None
         self.rayleigh_species = rayleigh_species
         self.continuum_species = continuum_species
+        self._P0 = P0
 
     def initialize_profiles(self):
         from taurex.util.util import conversion_factor
@@ -87,7 +90,9 @@ class petitRADTRANSModel(SimpleForwardModel):
             self._atmosphere = self.build_atmosphere_object()
             Pabar = conversion_factor('Pa','bar')
             pressures = self.pressureProfile[::-1]*Pabar
+            self.info('Pressure at surface %s',pressures[-1])
             self._atmosphere.setup_opa_structure(pressures)
+            self._initialized_petit = True
     def build_atmosphere_object(self):
         raise NotImplementedError
 
@@ -116,38 +121,87 @@ class petitRADTRANSModel(SimpleForwardModel):
     def build_abundance(self):
         import pathlib
         from taurex.util.util import get_molecular_weight
+        from taurex.constants import AMU
 
         active_gases = self.chemistry.activeGases
-        active_profile =self.chemistry.activeGasMixProfile
-
-        muProfile = self.chemistry.muProfile
+        active_profile =self.chemistry.activeGasMixProfile[:,::-1]
+        inactive_gases = self.chemistry.inactiveGases
+        inactive_profile = self.chemistry.inactiveGasMixProfile[:,::-1]
+        mu= self.chemistry.muProfile[::-1]/AMU
 
         abundance = {}
 
         for mol,prof,petit_name in zip(active_gases,active_profile,self.linespecies):
-            mol_weight = get_molecular_weight(mol)
-            abundance[petit_name] = mol_weight*prof[::-1]/muProfile[::-1]
+            abundance[petit_name] =to_mass_frac(mol,prof,mu)
         
+        # for mol in self.rayleigh_species:
+        #     if mol in abundance:
+        #         continue
+        #     if mol in active_gases or mol in self.chemistry.inactiveGases:
+        #         mol_weight = get_molecular_weight(mol)
+        #         prof = self.chemistry.get_gas_mix_profile(mol)[::-1]
+        #         abundance[mol] = to_mass_frac(mol,prof,mu)
+
+        # for cia in self.continuum_species:
+
+        #     for mol in cia.split('-'):
+        #         if mol in abundance:
+        #             continue
+        #         if mol in active_gases or mol in self.chemistry.inactiveGases:
+        #             mol_weight = get_molecular_weight(mol)
+        #             prof = self.chemistry.get_gas_mix_profile(mol)[::-1]
+        #             abundance[mol] = to_mass_frac(mol,prof,mu)
+        for mol,prof in zip(inactive_gases,inactive_profile):
+            abundance[mol] =to_mass_frac(mol,prof,mu)
+
         return abundance
 
     def setup_parameters(self):
         from taurex.util.util import conversion_factor
         from taurex.constants import AMU
+        from petitRADTRANS import nat_cst as nc
+
         Pabar = conversion_factor('Pa','bar')
         
         abundances = self.build_abundance()
 
         temperature = self.temperatureProfile[::-1]
 
-        MMW = self.chemistry.muProfile/AMU
+        MMW = self.chemistry.muProfile[::-1]/AMU
 
-        Rp = self.planet.fullRadius*100
+        Rp = self.planet.radius*nc.r_jup_mean
 
-        gravity = self.planet.gravity*10
+        P0 = self._P0
+        if self._P0 == -1:
+            P0 = 1e999
 
-        p0bar = self.pressureProfile[0]*Pabar
+        P0 = min(self.pressureProfile[0],P0)
+        P0 = max(self.pressureProfile[-1],P0)
+
+        p0bar = P0*Pabar
+
+        idx = (np.abs(self.pressureProfile - P0)).argmin()
+
+        altitude = self.altitudeProfile[idx]
+
+        gravity = self.planet.gravity_at_height(altitude)*100
+
 
         return abundances, temperature, MMW, Rp, gravity, p0bar
+
+    @fitparam(param_name='P0_radius', param_latex='P$_0$',default_fit=False,default_mode='log',default_bounds=[2,-5])
+    def P0(self):
+        return self._P0
+    
+    @P0.setter
+    def P0(self, value):
+        self._P0 = value
+
+
+    def add_contribution(self, contribution):
+        raise ValueError('TauREx 3 contributions are not supported with the petitRADTRANS forward models')
+
+
 
 
 
