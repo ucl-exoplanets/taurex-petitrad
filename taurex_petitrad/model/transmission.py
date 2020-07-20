@@ -43,6 +43,7 @@ class TransmissionRADTRANS(petitRADTRANSModel):
         self._gamma_scat=None
         self._kappa_zero=None
         self._haze_factor = None
+        self._cloud_pressure = Pcloud
         self.include_condensates = False
 
     def build_atmosphere_object(self):
@@ -70,7 +71,15 @@ class TransmissionRADTRANS(petitRADTRANSModel):
         self.info('Gravity in cm/2 at surface: %s',gravity)
         self.info('P0 = radius: %s',p0bar)
 
-        self._atmosphere.calc_transm(temperature, abundances, gravity, MMW, R_pl=Rp, P0_bar=p0bar,variable_gravity=True)
+        Pcloud = self._cloud_pressure
+
+        if Pcloud is not None:
+            Pcloud = Pcloud*1e-5
+
+
+        self._atmosphere.calc_transm(temperature, abundances, gravity, MMW, R_pl=Rp, P0_bar=p0bar, Pcloud=Pcloud,
+                                     gamma_scat=self._gamma_scat,kappa_zero=self._kappa_zero, haze_factor=self._haze_factor,
+                                     variable_gravity=True)
 
         Rs = self.star.radius*100
         integral = self._atmosphere.transm_rad**2
@@ -92,16 +101,49 @@ class TransmissionRADTRANS(petitRADTRANSModel):
 
         return rprs2, np.zeros(shape=(self.nLayers,wngrid.shape[0]))
 
-    # @fitparam(param_name='factor', param_latex='F',default_fit=False,default_mode='linear',default_bounds=[0.01,2.0])
-    # def factor(self):
-    #     return self._factor
+    @fitparam(param_name='kappa_zero', param_latex='$\kappa_0$',default_fit=False,default_mode='linear',default_bounds=[0.01,2.0])
+    def kappaZero(self):
+        return self._kappa_zero
     
-    # @factor.setter
-    # def factor(self, value):
-    #     self._factor = value
+    @kappaZero.setter
+    def kappaZero(self, value):
+        self._kappa_zero = value
 
+    @fitparam(param_name='gamma_scat', param_latex='$\gamma$',default_fit=False,default_mode='linear',default_bounds=[-4,2])
+    def gamma(self):
+        return self._gamma
+    
+    @gamma.setter
+    def gamma(self, value):
+        self._gamma = value
 
+    @fitparam(param_name='clouds_pressure',
+              param_latex='$P_\mathrm{clouds}$',
+              default_mode='log',
+              default_fit=False, default_bounds=[1e-3, 1e6])
+    def cloudsPressure(self):
+        """
+        Cloud top pressure in Pascal
+        """
+        return self._cloud_pressure
 
+    @cloudsPressure.setter
+    def cloudsPressure(self, value):
+        self._cloud_pressure = value
+
+    @fitparam(param_name='haze_factor',
+              param_latex='$f_\mathrm{haze}$',
+              default_mode='linear',
+              default_fit=False, default_bounds=[1e-3, 1e6])
+    def hazeFactor(self):
+        """
+        Cloud top pressure in Pascal
+        """
+        return self._haze_factor
+
+    @hazeFactor.setter
+    def hazeFactor(self, value):
+        self._haze_factor = value
 
     #KZ11 KZ33 MK29
 
