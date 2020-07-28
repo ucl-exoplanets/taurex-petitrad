@@ -7,6 +7,9 @@ from taurex.util.util import calculate_weight
 
 class LineByLine(InterpolatingOpacity):
 
+    @classmethod
+    def priority(cls):
+        return 200
 
     @classmethod
     def discover(cls):

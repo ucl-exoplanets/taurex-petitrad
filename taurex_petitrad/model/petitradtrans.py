@@ -109,7 +109,7 @@ class petitRADTRANSModel(SimpleForwardModel):
         opacity_dictionary = {x:pathlib.Path(y).stem for x,y in opacity_list}
         active_gases = self.chemistry.activeGases
 
-        return [opacity_dictionary[x] for x in active_gases]
+        return list(set([opacity_dictionary[x] for x in active_gases]))
 
 
     
