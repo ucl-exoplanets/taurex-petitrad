@@ -201,7 +201,23 @@ class petitRADTRANSModel(SimpleForwardModel):
     def add_contribution(self, contribution):
         raise ValueError('TauREx 3 contributions are not supported with the petitRADTRANS forward models')
 
+    BIBTEX_ENTRIES = [
+        """
+        @article{Mollire_petitrad,
+            title={petitRADTRANS},
+            volume={627},
+            ISSN={1432-0746},
+            url={http://dx.doi.org/10.1051/0004-6361/201935470},
+            DOI={10.1051/0004-6361/201935470},
+            journal={Astronomy \& Astrophysics},
+            publisher={EDP Sciences},
+            author={Mollière, P. and Wardenier, J. P. and van Boekel, R. and Henning, Th. and Molaverdikhani, K. and Snellen, I. A. G.},
+            year={2019},
+            month={Jul},
+            pages={A67}
+        }""",
 
+    ]
 
 
 
