@@ -105,8 +105,8 @@ There are no extra retrieval parameters provided by these forward models
 ## Limitations
 
 Currently no condensate opacities are supported as the current release of 
-TauREx does not have a scattering framework. Future releases will allow for
-their inclusion.
+TauREx does not have a comprehensive enough scattering framework to prevent incompatibility with other
+models. Future releases will allow for their inclusion.
 
 The majority of TauREx and its plugins can be used with the petitRADTRANS models such as chemistries,
 temeperature profiles, samplers, non-uniform priors etc.
