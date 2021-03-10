@@ -25,6 +25,7 @@ class petitRADTRANSModel(SimpleForwardModel):
                  rayleigh_species = [],
                  continuum_species = [],
                  wlen_bords_micron=[0.3,15],
+                 opacity_method=None,
                  P0=-1,
                  ):
         super().__init__(self.__class__.__name__,
@@ -45,6 +46,7 @@ class petitRADTRANSModel(SimpleForwardModel):
             
             if attempt_load:
                 path = petitrad_path or GlobalCache()['petitrad_path']
+                GlobalCache()['petitrad_path'] = path
 
                 if path is None:
                     self.error('No path found in either [Global] petitrad_path or ')
@@ -60,8 +62,9 @@ class petitRADTRANSModel(SimpleForwardModel):
 
         import petitRADTRANS
 
-        opacity_method = GlobalCache()['opacity_method']
-
+        opacity_method = opacity_method or  GlobalCache()['opacity_method']
+        GlobalCache()['opacity_method'] = opacity_method
+        
         if opacity_method in ('ktables',):
             opacity_method = 'c-k'
         else:

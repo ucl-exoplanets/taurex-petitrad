@@ -63,7 +63,28 @@ class LineByLine(InterpolatingOpacity):
         self._load_xsec_from_path()
 
     def _load_xsec_from_path(self):
+        from taurex.cache import GlobalCache
+        wavenumber_range = GlobalCache()['petitrad_wnclip']
+        wavelength_range = GlobalCache()['petitrad_wlclip']
+
+
+        wn_filter = slice(None)
+
+
         self._wavenumber_grid = 10000/(np.fromfile(os.path.join(self._molecule_path,'wlen.dat'))[::-1]*1e4)
+        if wavenumber_range is not None:
+            min_wn = min(wavenumber_range)
+            max_wn = max(wavenumber_range)
+            wn_filter = (self._wavenumber_grid >= min_wn) & (self._wavenumber_grid <= max_wn)
+        if wavelength_range is not None:
+            wn = [10000/x for x in wavelength_range]
+            min_wn = min(wn)
+            max_wn = max(wn)
+            wn_filter = (self._wavenumber_grid >= min_wn) & (self._wavenumber_grid <= max_wn)
+
+
+        self._wavenumber_grid =self._wavenumber_grid[wn_filter]
+
         self._xsec_grid = np.empty(shape=(self._pressure_grid.shape[0], 
                                           self._temperature_grid.shape[0],
                                           self._wavenumber_grid.shape[0]))
@@ -76,9 +97,10 @@ class LineByLine(InterpolatingOpacity):
             pindex = np.where(self._pressure_grid==p)[0]
             tindex = np.where(self._temperature_grid==t)[0]
 
+            arr = np.fromfile(sigma)[::-1]/num_molecules
 
 
-            self._xsec_grid[pindex, tindex,:] = np.fromfile(sigma)[::-1]/num_molecules
+            self._xsec_grid[pindex, tindex,:] = arr[wn_filter]
     
     def _determine_grids(self):
         import os

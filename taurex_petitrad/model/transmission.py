@@ -21,6 +21,7 @@ class TransmissionRADTRANS(petitRADTRANSModel):
                     rayleigh_species = [],
                     continuum_species = [],
                     wlen_bords_micron=[0.3,15],
+                    opacity_method=None,
                     Pcloud=None,
                     gamma_scat=None,
                     kappa_zero=None,
@@ -37,7 +38,8 @@ class TransmissionRADTRANS(petitRADTRANSModel):
                  atm_max_pressure,
                  rayleigh_species,
                  continuum_species,
-                 wlen_bords_micron)
+                 wlen_bords_micron,
+                 opacity_method)
 
         self._Pcloud=None
         self._gamma_scat=None
