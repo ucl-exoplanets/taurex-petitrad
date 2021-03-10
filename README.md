@@ -42,7 +42,7 @@ TauREx 3 will automatically include the package into Python so there is no need 
 
 Once done, you will have access to three new forward models:
 
-### Transmission
+## Transmission
 
 Transmission spectra can be accessed through the *model_type* keyword by setting it
 as either **transmission-petitrad** or **transit-petitrad**
