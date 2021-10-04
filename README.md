@@ -1,5 +1,7 @@
 # TauREx-petitRADTRANS plugin
 
+Current version: 0.0.0-alpha
+
 TauREx-petitRADTRANS is a plugin that allows for the use of [petitRADTRANS](https://petitradtrans.readthedocs.io/en/latest/) opacities
 and forward models in [TauREx](https://github.com/ucl-exoplanets/TauREx3_public)
 
