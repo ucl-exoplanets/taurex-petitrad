@@ -18,7 +18,7 @@ entry_points = {'taurex.plugins': 'petitrad = taurex_petitrad'}
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-version = "0.0.0-alpha"
+version = "0.1.0-alpha"
 
 setup(name='taurex_petitrad',
       author="Ahmed Faris Al-Refaie",
