@@ -30,7 +30,7 @@ Or by setting *petitrad_path* to the root petitRADTRANS folder
 
 ```
 [Global]
-petitrad_path = /path/to/petitRADTRANS/petitRADTRANS/input_data/
+petitrad_path = /path/to/petitRADTRANS/petitRADTRANS/
 ```
 
 You can include both if you desire, *petitrad_path* will be prioritized.
@@ -64,6 +64,7 @@ Pcloud | Grey cloud deck pressure in Pa | float | None| |
 gamma_scat | Powerlaw index | integer| None | |
 kappa_zero | Powerlaw cloud opacity term in cm2/g | float | None | |
 haze_factor | Rayleigh opacity scale term | float | None | |
+
 
 For the more through explaination of cloud terms
 please refer to [this](https://petitradtrans.readthedocs.io/en/latest/content/notebooks/clouds.html) documentation.

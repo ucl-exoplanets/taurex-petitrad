@@ -42,9 +42,9 @@ class TransmissionRADTRANS(petitRADTRANSModel):
                  opacity_method)
 
         self._Pcloud=None
-        self._gamma_scat=None
-        self._kappa_zero=None
-        self._haze_factor = None
+        self._gamma_scat=gamma_scat
+        self._kappa_zero=kappa_zero
+        self._haze_factor = haze_factor
         self._cloud_pressure = Pcloud
         self.include_condensates = False
 
