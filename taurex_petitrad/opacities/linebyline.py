@@ -4,7 +4,7 @@ import numpy as np
 import os
 import pathlib
 from taurex.util.util import calculate_weight
-from taurex.mpi import allocate_as_shared
+from taurex.mpi import allocate_as_shared, shared_rank
 
 
 class LineByLine(InterpolatingOpacity):
@@ -90,21 +90,24 @@ class LineByLine(InterpolatingOpacity):
         self._xsec_grid = np.empty(shape=(self._pressure_grid.shape[0], 
                                           self._temperature_grid.shape[0],
                                           self._wavenumber_grid.shape[0]))
+        self.info('GONNA PUT THIS BAD BOY IN SHARED')
+        self._xsec_grid = allocate_as_shared(self._xsec_grid, logger=self)
 
         num_moles = 1/calculate_weight(self.moleculeName)
 
         num_molecules = num_moles*6.0221409e23
+        self.info('Number of molecules per gram: %s', num_molecules)
+        self.info('OK NOW ACTUALLY LOADING')
+        if shared_rank() == 0:
+            for p, t, sigma in self._sigma_files:
+                pindex = np.where(self._pressure_grid==p)[0]
+                tindex = np.where(self._temperature_grid==t)[0]
 
-        for p, t, sigma in self._sigma_files:
-            pindex = np.where(self._pressure_grid==p)[0]
-            tindex = np.where(self._temperature_grid==t)[0]
-
-            arr = np.fromfile(sigma)[::-1]/num_molecules
+                arr = np.fromfile(sigma)[::-1]/num_molecules
 
 
-            self._xsec_grid[pindex, tindex,:] = arr[wn_filter]
-
-        self._xsec_grid = allocate_as_shared(self._xsec_grid, logger=self)
+                self._xsec_grid[pindex, tindex,:] = arr[wn_filter]
+        
     
     def _determine_grids(self):
         import os
