@@ -4,7 +4,7 @@ import numpy as np
 import os
 import pathlib
 from taurex.util.util import calculate_weight
-from taurex.mpi import allocate_as_shared, shared_rank
+from taurex.mpi import allocate_as_shared, shared_rank, barrier
 
 
 class LineByLine(InterpolatingOpacity):
@@ -91,6 +91,7 @@ class LineByLine(InterpolatingOpacity):
                                           self._temperature_grid.shape[0],
                                           self._wavenumber_grid.shape[0]))
         self.info('GONNA PUT THIS BAD BOY IN SHARED')
+        barrier()
         self._xsec_grid = allocate_as_shared(self._xsec_grid, logger=self)
 
         num_moles = 1/calculate_weight(self.moleculeName)
