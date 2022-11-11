@@ -4,6 +4,8 @@ import numpy as np
 import os
 import pathlib
 from taurex.util.util import calculate_weight
+from taurex.mpi import allocate_as_shared
+
 
 class LineByLine(InterpolatingOpacity):
 
@@ -101,6 +103,8 @@ class LineByLine(InterpolatingOpacity):
 
 
             self._xsec_grid[pindex, tindex,:] = arr[wn_filter]
+
+        self._xsec_grid = allocate_as_shared(self._xsec_grid, logger=self)
     
     def _determine_grids(self):
         import os
