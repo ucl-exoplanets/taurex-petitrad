@@ -4,7 +4,7 @@ import numpy as np
 import os
 import pathlib
 from taurex.util.util import calculate_weight
-from taurex.mpi import allocate_as_shared, shared_rank, barrier
+from taurex.mpi import allocate_as_shared, shared_rank, barrier, shared_comm
 
 
 class LineByLine(InterpolatingOpacity):
@@ -99,8 +99,15 @@ class LineByLine(InterpolatingOpacity):
         num_molecules = num_moles*6.0221409e23
         self.info('Number of molecules per gram: %s', num_molecules)
         self.info('OK NOW ACTUALLY LOADING')
-        if shared_rank() == 0:
-            for p, t, sigma in self._sigma_files:
+
+        shared_comm = shared_comm()
+        shared_nprocs = 1
+        if shared_comm is not None:
+            shared_nprocs = shared_comm.Get_size()
+        
+        
+        for idx,(p, t, sigma) in enumerate(self._sigma_files):
+            if idx % shared_nprocs == shared_rank():
                 pindex = np.where(self._pressure_grid==p)[0]
                 tindex = np.where(self._temperature_grid==t)[0]
 
